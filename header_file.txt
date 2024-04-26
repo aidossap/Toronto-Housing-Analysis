@@ -1,0 +1,33 @@
+COL0 - GEO UID
+COL1 - Housing - Total Sex / Average number of rooms per dwelling
+COL2 - Housing - Total Sex / Total - Private households by age of primary household maintainers - 25% sample data
+COL3 - Housing - Total Sex / Total - Owner households in non-farm, non-reserve private dwellings - 25% sample data / Average monthly shelter costs for owned dwellings ($)
+COL4 - Housing - Total Sex / Total - Owner households in non-farm, non-reserve private dwellings - 25% sample data / Average value of dwellings ($)
+COL5 - Housing - Total Sex / Total - Tenant households in non-farm, non-reserve private dwellings - 25% sample data / Average monthly shelter costs for rented dwellings ($)
+COL6 - Dwelling characteristics / Total - Occupied private dwellings by structural type of dwelling - 100% data
+COL7 - Dwelling characteristics / Total - Occupied private dwellings by structural type of dwelling - 100% data / Single-detached house
+COL8 - Dwelling characteristics / Total - Occupied private dwellings by structural type of dwelling - 100% data / Semi-detached house
+COL9 - Dwelling characteristics / Total - Occupied private dwellings by structural type of dwelling - 100% data / Row house
+COL10 - Dwelling characteristics / Total - Occupied private dwellings by structural type of dwelling - 100% data / Apartment or flat in a duplex
+COL11 - Dwelling characteristics / Total - Occupied private dwellings by structural type of dwelling - 100% data / Apartment in a building that has fewer than five storeys
+COL12 - Dwelling characteristics / Total - Occupied private dwellings by structural type of dwelling - 100% data / Apartment in a building that has five or more storeys
+COL13 - Dwelling characteristics / Average household size
+COL14 - Income - Total Sex / Total - Income statistics in 2020 for the population aged 15 years and over in private households - 100% data ; Both sexes
+COL15 - Income - Households / Total - Income statistics for private households - 100% data / Median total income of household in 2020 ($)
+COL16 - Education - Total Sex / Total - Secondary (high) school diploma or equivalency certificate for the population aged 15 years and over in private households - 25% sample data ; Both sexes / No high school diploma or equivalency certificate ; Both sexes
+COL17 - Education - Total Sex / Total - Secondary (high) school diploma or equivalency certificate for the population aged 15 years and over in private households - 25% sample data ; Both sexes / With high school diploma or equivalency certificate ; Both sexes
+COL18 - Education - Total Sex / Total - Secondary (high) school diploma or equivalency certificate for the population aged 25 to 64 years in private households - 25% sample data ; Both sexes / No high school diploma or equivalency certificate ; Both sexes
+COL19 - Education - Total Sex / Total - Secondary (high) school diploma or equivalency certificate for the population aged 25 to 64 years in private households - 25% sample data ; Both sexes / With high school diploma or equivalency certificate ; Both sexes
+COL20 - Education - Total Sex / Total - Highest certificate, diploma or degree for the population aged 15 years and over in private households - 25% sample data ; Both sexes / High (secondary) school diploma or equivalency certificate ; Both sexes
+COL21 - Education - Total Sex / Total - Highest certificate, diploma or degree for the population aged 15 years and over in private households - 25% sample data ; Both sexes / Postsecondary certificate, diploma or degree ; Both sexes
+COL22 - Education - Total Sex / Total - Highest certificate, diploma or degree for the population aged 15 years and over in private households - 25% sample data ; Both sexes / Postsecondary certificate, diploma or degree ; Both sexes / Postsecondary certificate or diploma below bachelor level ; Both sexes
+COL23 - Education - Total Sex / Total - Highest certificate, diploma or degree for the population aged 15 years and over in private households - 25% sample data ; Both sexes / Postsecondary certificate, diploma or degree ; Both sexes / Bachelor's degree or higher ; Both sexes
+COL24 - Education - Total Sex / Total - Highest certificate, diploma or degree for the population aged 15 years and over in private households - 25% sample data ; Both sexes / Postsecondary certificate, diploma or degree ; Both sexes / Bachelor's degree or higher ; Both sexes / Bachelor's degree ; Both sexes
+COL25 - Education - Total Sex / Total - Highest certificate, diploma or degree for the population aged 15 years and over in private households - 25% sample data ; Both sexes / Postsecondary certificate, diploma or degree ; Both sexes / Bachelor's degree or higher ; Both sexes / University certificate or diploma above bachelor level ; Both sexes
+COL26 - Education - Total Sex / Total - Highest certificate, diploma or degree for the population aged 15 years and over in private households - 25% sample data ; Both sexes / Postsecondary certificate, diploma or degree ; Both sexes / Bachelor's degree or higher ; Both sexes / Degree in medicine, dentistry, veterinary medicine or optometry ; Both sexes
+COL27 - Education - Total Sex / Total - Highest certificate, diploma or degree for the population aged 15 years and over in private households - 25% sample data ; Both sexes / Postsecondary certificate, diploma or degree ; Both sexes / Bachelor's degree or higher ; Both sexes / Master's degree ; Both sexes
+COL28 - Education - Total Sex / Total - Highest certificate, diploma or degree for the population aged 15 years and over in private households - 25% sample data ; Both sexes / Postsecondary certificate, diploma or degree ; Both sexes / Bachelor's degree or higher ; Both sexes / Earned doctorate ; Both sexes
+COL29 - Labour - Total Sex / Employment rate ; Both sexes
+COL30 - Labour - Total Sex / Unemployment rate ; Both sexes
+COL31 - Labour - Total Sex / Total - Labour force aged 15 years and over by industry - Sectors - North American Industry Classification System (NAICS) 2017 - 25% sample data ; Both sexes
+COL32 - Labour - Total Sex / Total - Labour force aged 15 years and over by industry - Sectors - North American Industry Classification System (NAICS) 2017 - 25% sample data ; Both sexes / All industries ; Both sexes
