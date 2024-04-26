@@ -1,0 +1,362 @@
+---
+title: "Toronto Shelter Costs Analysis"
+author: "Aidos Sapenov"
+date: "2023-09-26"
+output: html_document
+---
+
+# Introduction
+
+## Research Question
+The primary goal of this study is to answer the question: What are the main publicly available factors that significantly affect average monthly shelter costs for owned dwellings per census tract in the city of Toronto and is it possible to generate a well fitting predictive regression model for this data?
+
+## Purpose of the Model
+
+This model aims to:
+
+* Help potential buyers project their monthly budget 
+* Assist sellers in setting a fair price for their properties.
+* Provide insights to policy makers, urban planners and the public on the housing market
+* Enable users to quantitatively understand the factors affecting home prices, thus informing various stakeholders in their decision-making processes.
+ 
+
+## Approach
+
+We will:
+
+1. Acquire and clean a dataset containing information related to cost of living and more in Toronto.
+2. Conduct exploratory data analyses to understand the variables and their relationships.
+3. Generate all possible subsets of regression equations
+4. Validate the model using appropriate statistical tests and diagnostics.
+5. Test the model's predictive capabilities
+
+
+# Exploratory Data Analysis
+
+## Data Description
+```{r message=FALSE, warning=FALSE, include=FALSE}
+library(dplyr)
+library(ggplot2)
+library(tidyverse)
+library(leaps)
+library(dplyr)
+library(gridExtra)
+library(GGally)
+library(MASS)
+library(car)
+#load in the data & headerfile
+header <- "header_file.txt"
+toronto_census_data <- read.csv("pxoVtvfN9_data.csv")
+
+column_names <- readLines(header)
+
+colnames(toronto_census_data) <- column_names
+
+income_col <- toronto_census_data$`COL15 - Income - Households / Total - Income statistics for private households - 100% data / Median total income of household in 2020 ($)`
+  
+#remove some columns
+toronto_census_data$`COL29 - Labour - Total Sex / Employment rate ; Both sexes`<- NULL
+
+toronto_census_data$`COL31 - Labour - Total Sex / Total - Labour force aged 15 years and over by industry - Sectors - North American Industry Classification System (NAICS) 2017 - 25% sample data ; Both sexes`<- NULL
+
+toronto_census_data$`COL31 - Labour - Total Sex / Total - Labour force aged 15 years and over by industry - Sectors - North American Industry Classification System (NAICS) 2017 - 25% sample data ; Both sexes`<- NULL
+
+toronto_census_data$`COL32 - Labour - Total Sex / Total - Labour force aged 15 years and over by industry - Sectors - North American Industry Classification System (NAICS) 2017 - 25% sample data ; Both sexes / All industries ; Both sexes` <- NULL
+
+toronto_census_data$`COL14 - Income - Total Sex / Total - Income statistics in 2020 for the population aged 15 years and over in private households - 100% data ; Both sexes` <- NULL
+
+
+toronto_census_data <- toronto_census_data[,-c(1,3,7,15,16,17,18,19,20,21,22,23,24,25,26,27,28)]
+
+toronto_census_data <- toronto_census_data[,-c(5,6,7,8,9,10)]
+
+toronto_census_data$`COL15 - Income - Households / Total - Income statistics for private households - 100% data / Median total income of household in 2020 ($)` <- income_col
+#remove rows which contain NA values 
+toronto_census_data <- na.omit(toronto_census_data)
+
+#shorten the column names
+new_col_names <- c("Average number of rooms per dwelling", " Average monthly shelter costs for owned dwellings ($)", "Average value of dwellings ($)", "Average monthly shelter costs for rented dwellings ($)", "Average household size", "Unemployment rate ; Both sexes", "Median total income of household in 2020 ($)")
+
+colnames(toronto_census_data) <- new_col_names
+
+toronto_census_data_1 <- toronto_census_data
+#split the data into fitting and training data
+set.seed(123)
+
+shuffled_indices <- sample(1:nrow(toronto_census_data_1))
+
+half_n <- ceiling(nrow(toronto_census_data_1) / 2)
+indices_part1 <- shuffled_indices[1:half_n]
+indices_part2 <- shuffled_indices[(half_n + 1):nrow(toronto_census_data_1)]
+
+toronto_census_data <- toronto_census_data_1[indices_part1, ]
+testing_data <- toronto_census_data_1[indices_part2, ]
+
+```
+
+The dataset that will be used in this study comes from the Canadian Census Analyser portal (CHASS). We will be using the 2021 census data as it is the most recent available dataset on the platform. The variables which have been preliminarily selected for the study include:
+
+* Average number of rooms per dwelling
+* Average monthly shelter costs for owned dwellings ($)
+* Average value of dwellings ($)
+* Average monthly shelter costs for rented dwellings ($)
+* Median total income of household in 2020 ($)
+* Unemployment rate 
+
+(Rooms refers to enclosed areas within a private dwelling which are finished and suitable for year round living.)
+
+(Shelter cost refers to the average monthly total of all shelter expenses paid by households)
+
+(Value (owner estimated) refers to the dollar amount expected by the owner if the asset were to be sold)
+
+In the context of households, total income refers to receipts from certain sources of all household members, before income taxes and deductions, during a specified reference period
+
+The dataset contains 1211 census tracts which represent areas in the Toronto downtown core. For the purposes of model training the data set will be split into two parts: a subset for model fitment and a subset reserved for testing.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE, fig.show="hold", out.width="50%"}
+
+#generate summary stats for each predictor variable
+summary_table <- summary(toronto_census_data)
+
+table1 <- summary_table[,1, drop =FALSE]
+table2 <- summary_table[,2, drop =FALSE]
+table3 <- summary_table[,3, drop =FALSE]
+table4 <- summary_table[,4, drop =FALSE]
+table5 <- summary_table[,5, drop =FALSE]
+table6 <- summary_table[,6, drop =FALSE]
+table7 <- summary_table[,7, drop =FALSE]
+
+
+knitr:::kable(list(table1,table2,table3,table4,table5,table6,table7),"markdown", booktabs = T)
+
+
+#scatter plots of independent variables vs dependent 
+plots <- list()
+
+plots <- lapply(names(toronto_census_data)[-which(names(toronto_census_data) == "Average monthly shelter costs for owned dwellings ($)")], function(col){
+  ggplot(toronto_census_data, aes_string(x = "Average monthly shelter costs for owned dwellings ($)", y = col)) + 
+    geom_point() +
+    labs(title = paste("Average monthly shelter costs for owned dwellings ($)", col), 
+         x = "Average monthly shelter costs for owned dwellings ($)", 
+         y = col)
+})
+
+if(length(plots) > 0) {
+  grid.arrange(grobs = plots, ncol = 1)
+}
+
+
+```
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE}
+list_of_qqplots <- list()
+for (col_name in names(toronto_census_data)) {
+   # Check if the column is numeric
+   if (is.numeric(toronto_census_data[[col_name]])) {
+     # Generate Q-Q plot using ggplot2
+     p <- ggplot(toronto_census_data, aes(sample = !!sym(col_name))) +
+          geom_qq() +
+          geom_qq_line() +
+          ggtitle(paste(col_name))
+     
+     # Append the Q-Q plot into list_of_qqplots
+     list_of_qqplots[[length(list_of_qqplots)+1]] <- p
+     
+   }
+}
+
+#check for linearity among predictor variables 
+ggpairs(toronto_census_data)
+
+#display qqplots in a grid 
+grid.arrange(grobs = list_of_qqplots, ncol = 3)
+
+```
+
+Using R we generated the histograms, correlation matrix, and QQplots of all of the potential predictor variables contained in our dataset. This will be helpful in determining the distribution of the predictor variables, as our multiple linear regression must be provisionally justified. After reviewing the histograms of each variables, we can see only some have an approximate normal distribution and others are slightly skrewd to the right. 
+
+Furthermore, the correlation between each predictor variable is between the range of |0.3 - 0.85| which ranges from low to highly correlated. This is an important step to verify to ensure that our predictor variables are not strongly correlated among each other which will lead to problems such as multicollinearity.
+
+
+```{r eval=FALSE, message=FALSE, warning=FALSE, include=FALSE, paged.print=TRUE}
+
+#box-cox
+avg_rooms <- boxcox(lm(toronto_census_data$`Average number of rooms per dwelling` ~ 1))
+
+income <- boxcox(lm(toronto_census_data$`Median total income of household in 2020 ($)` ~ 1))
+
+rented<-boxcox(lm(toronto_census_data$`Average monthly shelter costs for rented dwellings ($)` ~ 1))
+
+#boxcox(lm(toronto_census_data$`Unemployment rate ; Both sexes` ~ 1))
+
+size<-boxcox(lm(toronto_census_data$`Average household size` ~ 1))
+
+value<-boxcox(lm(toronto_census_data$`Average value of dwellings ($)` ~ 1))
+
+owned<-boxcox(lm(toronto_census_data$` Average monthly shelter costs for owned dwellings ($)` ~ 1))
+
+avg_rooms_lambda <-avg_rooms$x[which.max(avg_rooms$y)]
+income_lambda <- income$x[which.max(income$y)]
+rented_lambda <-rented$x[which.max(rented$y)]
+size_lambda <- size$x[which.max(size$y)]
+value_lambda <- value$x[which.max(value$y)]
+owned_lambda <- owned$x[which.max(owned$y)]
+
+name <- c(avg_rooms,income,rented,size,value,owned)
+lambda <- c(avg_rooms_lambda,income_lambda,rented_lambda,size_lambda,value_lambda,owned_lambda)
+
+transformation_table <- c(name, lambda)
+
+#apply log transformation to income and rented shelter costs
+toronto_census_data$`Median total income of household in 2020 ($)` <- log(toronto_census_data$`Median total income of household in 2020 ($)`)
+
+toronto_census_data$`Average monthly shelter costs for rented dwellings ($)` <- log(toronto_census_data$`Average monthly shelter costs for rented dwellings ($)`)
+
+toronto_census_data$`Average value of dwellings ($)` <- 1 / sqrt(toronto_census_data$`Average value of dwellings ($)`)
+
+
+```
+
+Using the Box-Cox function we are able to see how we can transform the variables such that they are more normally distributed. The variables which require transformations are Median total income of household in 2020 which will require a log transformation, Average monthly shelter costs for rented dwellings which will also require a log transformation, Average value of dwellings which will require a 1/sqrt(x) transformation. The remaining variables will remain the same as their box-cox lambda values due not justify a need for a transformation. 
+
+# Model Development
+
+Using the leaps package in R, we are able to generate all possible subsets of the predictor variables and fit a linear regression model for every permutation of predictors variables. The package is also able to summarize the best set of variables for each model size based on criteria such as RSS, Adjusted R-squared, Mallow's Cp and Akaikes Information Criterion. Looking at the plots generated for each subset of predictor variables we are able to infer some key insights for model selection:
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=TRUE, figures-side, fig.show="hold", out.width="50%"}
+all_subsets <- regsubsets(toronto_census_data$` Average monthly shelter costs for owned dwellings ($)` ~ ., data = toronto_census_data)
+
+summary_subsets <- summary(all_subsets)
+
+c1 <- coef(all_subsets, 1)
+c2 <- coef(all_subsets, 2)
+c3 <- coef(all_subsets, 3)
+c4 <- coef(all_subsets, 4)
+c5 <- coef(all_subsets, 5)
+c6 <- coef(all_subsets, 6)
+  
+n1 <- names(c1)[-1]
+n2 <- names(c2)[-1]
+n3 <- names(c3)[-1]
+n4 <- names(c4)[-1]
+n5 <- names(c5)[-1]
+n6 <- names(c6)[-1]
+
+n1_1 <- paste(n1, collapse = ", ")
+n2_1 <- paste(n2, collapse = ", ")
+n3_1 <- paste(n3, collapse = ", ")
+n4_1 <- paste(n4, collapse = ", ")
+n5_1 <- paste(n5, collapse = ", ")
+n6_1 <- paste(n6, collapse = ", ")
+
+Number_of_Variables <- c("1", "2", "3", "4", "5", "6")
+Predictor_Name <- c(n1_1,n2_1,n3_1,n4_1,n5_1,n6_1)
+
+model_table <- data.frame(Number_of_Variables,Predictor_Name)
+
+knitr::kable(model_table, caption = "Optimal Predictor Subsets by Quantity", align = "lr")
+
+#plots of the different model criteria (add this to report)
+plot(summary_subsets$rss, xlab = "Number of Variables", ylab = "RSS", type = "l", title = "RSS")
+plot(summary_subsets$adjr2, xlab = "Number of Variables", ylab = "Adjusted RSq", type = "l", title = "Adjusted RSq")
+plot(summary_subsets$cp, xlab = "Number of Variables", ylab = "Mallow's Cp", type = "l", title = "Mallow's Cp")
+plot(summary_subsets$bic, xlab = "Number of Variables", ylab = "BIC", type = "l", title = "BIC")
+
+```
+
+* The RSS values continues to drop as the number of predictor variables increase 
+* Adjusted RSquared values increase as the number of predictor variables increase
+* BIC and Cp values are the lowest for 6 variables
+
+Therefore it seems to be the best choice to start investigating the models which include six predictor variables as when we are comparing different models we generally want to have the lowest AIC and BIC values and the highest Adjusted RSquared values. 
+
+## Model Selection
+
+Lets check for the four underlying assumptions needed for linear regression which is linearity, independence of errors, constant variance of the errors (homoscedasticity), normality of the errors. 
+
+For this we can look a summary of the regression for models containing six variables. 
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.show="hold", out.width="50%"}
+model6 <- lm(toronto_census_data$` Average monthly shelter costs for owned dwellings ($)` ~ toronto_census_data$`Average number of rooms per dwelling` + toronto_census_data$`Average value of dwellings ($)`+ toronto_census_data$`Average monthly shelter costs for rented dwellings ($)`+toronto_census_data$`Average household size`+toronto_census_data$`Unemployment rate ; Both sexes`+toronto_census_data$`Median total income of household in 2020 ($)`)
+
+plot(model6)
+summary(model6)
+
+# check VIF
+vif(model6)
+```
+
+The diagnostic plots indicate that there is some potentially quadratic relationship with in the residuals vs fitted plots. Additionally, the QQPlot suggests that the residuals are relatively normally distributed as they generally follow the straight dashed line. The scale-location plot shows that the residuals are randomly spread and do not show signs of heteroscedasticity. This model has an Adjusted R-squared value of 0.7764, which means that around 77% of the variability in the average monthly shelter costs can be explained by our model and based on the p-values all of our predictors are statistically significant. However, the VIF for the average number of rooms and median income was close to or greater than five which indicates that there is some form of multicollinearity between these predicator variables. Lets test the regression model in absence of these variables:
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.show="hold", out.width="50%"}
+model4 <- lm(toronto_census_data$` Average monthly shelter costs for owned dwellings ($)` ~ toronto_census_data$`Average value of dwellings ($)`+toronto_census_data$`Average household size`+toronto_census_data$`Average monthly shelter costs for rented dwellings ($)`+toronto_census_data$`Unemployment rate ; Both sexes`)
+plot(model4)
+summary(model4)
+vif(model4)
+
+```
+
+After making these adjustments the diagnostic plots seem to improve, there is a less pronounced quadratic relationship seen in the residuals vs fitted plot, but the QQplot of the residuals indicates that there is normality, the Scale-Location plot does not show evidence of heteroscedastisity, and the leverage plot does not show signs of outliers which could heavily influence the regression model apart from entry 514 which is close to the Cooks distance line. A possible explanation could be that this census tract has an average home value of approximately four million dollars which is not a common occurrence in the city would warrant some further investigation. The VIF for the predictors is below 1.6 indicating low correlation between predictors and our predicators all remain statistically significant. This model has an Adjusted R-squared value of 0.6889.
+
+
+## Predication Testing
+Now let us try to test how accurate our model can predict the average cost of owned shelter based on the data which we currently have. Using the predict function in R, we are able to use our selected four variable model in conjunction with the testing data subset. To evaluate how well the model fits we will calculate Mean Absolute Error which measures the magnitude of the errors between predicted and observed values, Mean Square Error and its square root which is the average of the squared differences between predicted values and actual values.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.show="hold", out.width="50%"}
+
+#generate predictions for testing data set 
+predicted_cost <- predict(model4, newdata = testing_data)
+
+
+residuals <- toronto_census_data$` Average monthly shelter costs for owned dwellings ($)` - predicted_cost
+
+MAE <- mean(abs(residuals))
+
+
+MSE <- mean(residuals^2)
+
+
+RMSE <- sqrt(MSE)
+
+print(paste("MAE:", round(MAE, 2)))
+print(paste("MSE:", round(MSE, 2)))
+print(paste("RMSE:", round(RMSE, 2)))
+
+```
+
+
+Means absolute error of our predictive model is \$191.72 which means that on average our models predictions of average monthly shelter costs are off by \$191.72 and in the data set the average monthly shelter cost is \$2085 with a min of \$1100 and max of \$4480 we have an error of about 9%. Additionally, our means square error is \$243.63 which is larger than our mean absolute error since it is more sensitive to outliers, and given the large range of monthly shelter costs this is not a big surprise. Overall, the model performs quite well in the context of the predicting the dependent variable.
+
+
+# Conclusion
+
+## Summary and Usefulness of the Model
+This model is useful within the setting of Toronto's housing market as there are not many empirical analysis conducted on publicly available data sets which help homeowners understand monthly cost patterns and which parameters of their property contribute to such costs. Often times real estate markets are heavily mystified and demonstrate unusual patterns especially for a city like Toronto where home prices are heavily inflated or do not seem to match average market values.
+
+In the context of the model generated this is how our predictor influence the average monthly shelter cost for owned dwellings:
+
+* For every \$1 increase in the Average value of dwellings, the average monthly shelter costs for owned dwellings increase by \$0.0005508 (or 5.508e-04)
+* For every unit increase in the Average household size, the average monthly shelter costs for owned dwellings increase by $83.64.
+* For every \$1 increase in the Average monthly shelter costs for rented dwellings, the average monthly shelter costs for owned dwellings increase by \$0.2736
+* For every 1% increase in the Unemployment rate, the average monthly shelter costs for owned dwellings decrease by \$8.687.
+
+
+## Limitations and Real-World Implications
+A major limitation of the model generated in this report is that in general average shelter costs are subject to large number of geographical factors, such as the location of the census tract and its relation to various other census tracts. For example, in general the average shelter costs for properties closer to lake fronts are higher than those further away from lake fronts. The geographically factor of the data set is not accounted for in this analysis as it is would require a deeper understanding of spatial autocorrelation. Also as stated previously in the model selection process, an increase in variables seems to result in more well fitting models. Unfortunately the census data set did not contain as much relevant information as expected meaning our model is not as accurate as it could possibly be. If we were to carefully increase the number of variables, keeping in mind to check how the relationship of the variables to each other as to eliminate any confounding variables, there is evidence to suggest that would result in a more accurate model.    
+
+
+# Appendix: All code for this report
+```{r ref.label=knitr::all_labels(), echo = T, eval = F}
+
+```
+
+
+# References
+```{r echo=FALSE}
+refs <- bibtex::read.bib("citations.bib")
+print(refs)
+```
+
+
