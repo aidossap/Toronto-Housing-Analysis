@@ -39,7 +39,6 @@ library(dplyr)
 library(ggplot2)
 library(tidyverse)
 library(leaps)
-library(dplyr)
 library(gridExtra)
 library(GGally)
 library(MASS)
@@ -358,5 +357,6 @@ A major limitation of the model generated in this report is that in general aver
 refs <- bibtex::read.bib("citations.bib")
 print(refs)
 ```
+
 
 
